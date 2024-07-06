@@ -33,9 +33,29 @@ class UserService {
             const query = 'SELECT u.id, u.email, u.password FROM users u WHERE u.email = ?'
             const [user] = await mySQLContext.executeAsync(query, [email]);
 
-            console.log(user);
-
             return user;
+        } catch (ex) {
+            throw new Error(ex.message);
+        }
+    }
+
+    async getProfileByUsername(username) {
+        try {
+            const query = 'SELECT u.username, u.profileImageName, u.description FROM users u WHERE u.username = ?'
+            const [profile] = await mySQLContext.executeAsync(query, [username]);
+
+            return profile;
+        } catch (ex) {
+            throw new Error(ex.message);
+        }
+    }
+
+    async usernameIsExist(username) {
+        try {
+            const query = 'SELECT u.username FROM users u WHERE u.username = ?'
+            const [usernameExist] = await mySQLContext.executeAsync(query, [username]);
+
+            return usernameExist !== undefined;
         } catch (ex) {
             throw new Error(ex.message);
         }
