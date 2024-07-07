@@ -15,19 +15,16 @@ class AuthController {
     try {
       const { email, username, password } = req.body;
 
-      // check all require data is not null or undefined or empty
       if (!(email && username && password)) {
         return res.status(400).json(new ResponseDto(false, messageConfigs.INCOMPLETE_INFORMATION, null));
       }
 
-      // check email is exist
       if (await userService.emailIsExist(email)) return res.status(400).json(new ResponseDto(false, messageConfigs.EMAIL_IS_EXIST, null));
 
-      // hash password
       const passwordHash = (await bcrypt.hash(password, 10)).toString();
 
-      // store user
-      await userService.createUser(email, username,  passwordHash);
+      const userId = await userService.createUser(email, passwordHash);
+      await userService.createProfile(userId, username);
 
       return res
         .status(201)

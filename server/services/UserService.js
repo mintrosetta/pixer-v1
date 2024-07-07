@@ -17,12 +17,36 @@ class UserService {
         }
     }
 
-    async createUser(email, username, password) {
+    async createUser(email, password) {
+        let connection;
         try {
-            const createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
+            const createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
 
-            const query = `INSERT INTO users (email, username, password, createdAt, updatedAt) VALUES (?,?,?,?,?)`;
-            await mySQLContext.executeAsync(query, [email, username, password, createdAt, createdAt]);
+            connection = await mySQLContext.pool.getConnection();
+            await connection.beginTransaction();
+
+            const query = `INSERT INTO users (role_id, email, password, createdAt, updatedAt) VALUES (1, ?, ?, ?, ?);`;
+            await connection.execute(query, [email, password, createdAt, createdAt])            
+            
+            const [user] = await connection.execute('SELECT LAST_INSERT_ID() AS userId;');
+
+            await connection.commit();
+
+            return user[0].userId;
+        } catch (ex) {
+            await connection.rollback();
+            throw new Error(ex.message);
+        } finally {
+            await connection.release();
+        }
+    }
+
+    async createProfile(userId, username) {
+        try {
+            const createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
+
+            const query = `INSERT INTO user_profiles (user_id, username, createdAt, updatedAt) VALUES (?,?,?,?)`;
+            await  mySQLContext.executeAsync(query, [userId, username, createdAt, createdAt]);
         } catch (ex) {
             throw new Error(ex.message);
         }
@@ -41,7 +65,7 @@ class UserService {
 
     async getProfileByUsername(username) {
         try {
-            const query = 'SELECT u.username, u.profileImageName, u.description FROM users u WHERE u.username = ?'
+            const query = 'SELECT u.username, u.profileImageName FROM user_profiles u WHERE u.username = ?'
             const [profile] = await mySQLContext.executeAsync(query, [username]);
 
             return profile;
@@ -52,7 +76,7 @@ class UserService {
 
     async usernameIsExist(username) {
         try {
-            const query = 'SELECT u.username FROM users u WHERE u.username = ?'
+            const query = 'SELECT u.username FROM user_profiles u WHERE u.username = ?;'
             const [usernameExist] = await mySQLContext.executeAsync(query, [username]);
 
             return usernameExist !== undefined;
