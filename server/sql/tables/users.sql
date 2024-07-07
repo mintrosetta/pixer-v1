@@ -1,0 +1,10 @@
+CREATE TABLE users (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+    role_id INT NOT NULL,
+    email NVARCHAR(100) NOT NULL UNIQUE,
+    password NVARCHAR(100) NOT NULL,
+    isActive TINYINT NOT NULL DEFAULT 1,
+    createdAt DATETIME NOT NULL,
+    updatedAt DATETIME NOT NULL,
+    FOREIGN KEY (role_id) REFERENCES user_roles(id)
+);
