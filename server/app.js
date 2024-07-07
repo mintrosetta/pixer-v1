@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
-const mapRoutes = require('./middleware/mapRoutes');
+const useMapController = require('./middleware/useMapController');
 
 const app = express();
 
@@ -15,7 +15,8 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(express.json());
-app.use(mapRoutes);
+
+app.use(useMapController);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

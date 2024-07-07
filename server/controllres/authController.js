@@ -51,7 +51,7 @@ class AuthController {
       const passwordIsMatch = await bcrypt.compare(password, user.password);
       if (!passwordIsMatch) return res.status(400).json(new ResponseDto(false, messageConfigs.CREDENTIAL_INVALID, null));
 
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1m' });
 
       const cookieAge = ((1000 * 60) * 60) * 24;
       res.cookie('token', token, {
