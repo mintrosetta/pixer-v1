@@ -15,10 +15,17 @@ class ArtController {
             const { userId } = req.user;
             const { price, agrements, description } = req.body;
             const file = req.file;
-        
-            await awss3Service.upload(file, Date.now().toString(), path.extname(file.originalname));
 
-            return res.status(201).json(new ResponseDto(true, msgConfig.SUCCESS, null));
+            if (!(price && agrements && description && file)) return res.status(400).json(new ResponseDto(false, msgConfig.INCOMPLETE_INFORMATION, null)); 
+            
+            const fileName = Date.now().toString();
+            const fileExt = path.extname(file.originalname);
+            await awss3Service.upload(file, fileName, fileExt);
+
+            const productId = await artService.createArt(userId, `${fileName}${fileExt}`, price, description);
+            await artService.appendAgrements(productId, agrements);
+
+            return res.status(201).json(new ResponseDto(true, msgConfig.SUCCESS, 0));
         } catch (ex) {
             console.log(ex);
             return res.status(500).json(new ResponseDto(false, msgConfig.FAILED, null)); 
